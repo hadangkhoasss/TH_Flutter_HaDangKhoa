@@ -33,18 +33,18 @@ Upon successful completion, this project demonstrates:
 ## 🖼️ Screenshots
 
 1. Basic operations: 5 + 3 = 8 
-![Phep Cong](image.png)
+![Phep Cong](screenshots/image.png)
 1. Decimal operations: 3.5 × 2 = 7 
-![alt text](image-1.png)
+![alt text](screenshots/image-1.png)
 2. Negative numbers: -5 + 3 = -2 
-![alt text](image-2.png)
+![alt text](screenshots/image-2.png)
 3. Division by zero handling 
-![alt text](image-3.png)
+![alt text](screenshots/image-3.png)
 4. Clear functionality 
-![alt text](image-4.png)
-![alt text](image-5.png)
+![alt text](screenshots/image-4.png)
+![alt text](screenshots/image-5.png)
 5. CE functionality 
-![alt text](image-6.png)
-![alt text](image-7.png)
+![alt text](screenshots/image-6.png)
+![alt text](screenshots/image-7.png)
 6. Chain operations: 5 + 3 × 2 = 16
-![alt text](image-8.png)
+![alt text](screenshots/image-8.png)
