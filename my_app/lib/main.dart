@@ -1,150 +1,139 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'game.dart';
+import 'package:file_selector/file_selector.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Tile('A', HitType.hit),
-              Tile('B', HitType.miss),
-              Tile('C', HitType.partial),],
-          ),
-
-        ),
-      ),
-    );
-  }
-}
-
-class Tile extends StatelessWidget {
-  const Tile(this.letter, this.hitType, {super.key});
-
-  final String letter;
-  final HitType hitType;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        color: switch (hitType) {
-          HitType.hit => Colors.green,
-          HitType.partial => Colors.yellow,
-          HitType.miss => Colors.grey,
-          _ => Colors.white,
-        },
-      ),
-      child: Center(
-        child: Text(
-          letter.toUpperCase(),
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-      ),
-    );
-  }
-}
-
-
-
-
-
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
+// 1️⃣ Định nghĩa Model
+class MyItem {
+  final int id;
   final String title;
 
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  MyItem({required this.id, required this.title});
+
+  factory MyItem.fromJson(Map<String, dynamic> json) {
+    return MyItem(
+      id: json['id'],
+      title: json['title'],
+    );
+  }
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+void main() {
+  runApp(const JsonFileSelectorApp());
+}
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+class JsonFileSelectorApp extends StatelessWidget {
+  const JsonFileSelectorApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'JSON → Map → Object → UI',
+      theme: ThemeData(primarySwatch: Colors.indigo),
+      home: const JsonFileScreen(),
+    );
+  }
+}
+
+class JsonFileScreen extends StatefulWidget {
+  const JsonFileScreen({super.key});
+
+  @override
+  State<JsonFileScreen> createState() => _JsonFileScreenState();
+}
+
+class _JsonFileScreenState extends State<JsonFileScreen> {
+  String? jsonString;
+  Map<String, dynamic>? mapData;
+  MyItem? item;
+
+  Future<void> pickJsonFile() async {
+    const XTypeGroup typeGroup = XTypeGroup(
+      label: 'json',
+      extensions: ['json'],
+    );
+
+    final XFile? file = await openFile(acceptedTypeGroups: [typeGroup]);
+
+    if (file != null) {
+      final content = await file.readAsString();
+      setState(() {
+        jsonString = content;
+        mapData = jsonDecode(jsonString!);
+        item = MyItem.fromJson(mapData!);
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+      appBar: AppBar(title: const Text('Phân tích JSON từ file')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
           children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            ElevatedButton.icon(
+              onPressed: pickJsonFile,
+              icon: const Icon(Icons.upload_file),
+              label: const Text('Chọn file JSON'),
             ),
+            const SizedBox(height: 20),
+
+            if (jsonString != null) ...[
+              Text('1️⃣ JSON String:', style: titleStyle),
+              Container(
+                padding: boxPadding,
+                decoration: boxDecoration,
+                child: Text(jsonString!),
+              ),
+              const SizedBox(height: 16),
+
+              Text('2️⃣ Sau khi parse → Map:', style: titleStyle),
+              Container(
+                padding: boxPadding,
+                decoration: boxDecoration,
+                child: Text(mapData.toString()),
+              ),
+              const SizedBox(height: 16),
+
+              Text('3️⃣ Sau khi convert → Object (Model):', style: titleStyle),
+              Container(
+                padding: boxPadding,
+                decoration: boxDecoration,
+                child: Text('id: ${item!.id}\ntitle: ${item!.title}'),
+              ),
+              const SizedBox(height: 16),
+
+              Text('4️⃣ Hiển thị lên UI:', style: titleStyle),
+              Card(
+                color: Colors.indigo.shade50,
+                elevation: 3,
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.indigo,
+                    child: Text(item!.id.toString(),
+                        style: const TextStyle(color: Colors.white)),
+                  ),
+                  title: Text(item!.title,
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
+                  subtitle: const Text('Dữ liệu đã được chuyển thành Object'),
+                ),
+              ),
+            ]
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
     );
   }
+
+  // Style helper
+  final titleStyle = const TextStyle(
+      fontSize: 16, fontWeight: FontWeight.bold, color: Colors.indigo);
+  final boxPadding = const EdgeInsets.all(12);
+  final boxDecoration = BoxDecoration(
+    color: Colors.grey.shade100,
+    borderRadius: BorderRadius.circular(8),
+    border: Border.all(color: Colors.indigo.shade100),
+  );
 }
